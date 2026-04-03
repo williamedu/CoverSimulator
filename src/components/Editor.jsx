@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import CaseGraphic from './CaseGraphic';
+import CheckoutForm from './CheckoutForm'; // <--- AGREGAMOS ESTA LÍNEA
 // NUEVO: Importamos phoneModels
 import { caseColors, detailColorsList, iconsList, phoneModels } from '../utils/constants';
 
 export default function Editor() {
+  // NUEVO: Interruptor para cambiar entre Diseñador (1) y Formulario (2)
+  const [currentStep, setCurrentStep] = useState(1);
+
   // NUEVO ESTADO: Guardamos el ID del modelo seleccionado (Por defecto el primero de la lista)
   const [activeModelId, setActiveModelId] = useState(phoneModels[0].id);
   
@@ -14,8 +18,28 @@ export default function Editor() {
 
   const ActiveIconComponent = iconsList.find(i => i.id === activeIconId).component;
   
-  // NUEVO: Buscamos toda la información del modelo seleccionado actual
+// NUEVO: Buscamos toda la información del modelo seleccionado actual
   const activeModel = phoneModels.find(m => m.id === activeModelId);
+
+  // NUEVO: Si estamos en el paso 2, mostramos el formulario y detenemos el renderizado del editor
+  if (currentStep === 2) {
+    return (
+      <CheckoutForm 
+        onBack={() => setCurrentStep(1)} 
+       designData={{
+          modelo: activeModel.name,
+          colorBase: caseColors.find(c => c.hex === activeColorHex)?.name,
+          hex: activeColorHex, // <--- Color real para el visualizador
+          iniciales: initials,
+          colorLetras: detailColorsList.find(c => c.hex === detailsColor)?.name,
+          detailsColor: detailsColor, // <--- Color de letras real
+          IconComponent: ActiveIconComponent, // <--- El icono elegido
+          baseImage: activeModel.baseImage, // <--- La forma del celular
+          textureImage: activeModel.textureImage // <--- La textura
+        }}
+      />
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full max-w-[1400px] mx-auto p-4 lg:p-8 items-start overflow-hidden">
@@ -191,10 +215,13 @@ export default function Editor() {
 
       </div>
 
-      {/* 3. COLUMNA DERECHA: BOTÓN DE COMPRA */}
+    {/* 3. COLUMNA DERECHA: BOTÓN DE COMPRA */}
       <div className="lg:col-span-3 flex flex-col pt-4 lg:pt-0 self-center">
-        <button className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-4 px-6 rounded transition-colors text-lg shadow-xl flex justify-center items-center gap-2">
-          Agregar al Carrito
+        <button 
+          onClick={() => setCurrentStep(2)}
+          className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-4 px-6 rounded transition-colors text-lg shadow-xl flex justify-center items-center gap-2"
+        >
+          Siguiente Paso
         </button>
       </div>
 

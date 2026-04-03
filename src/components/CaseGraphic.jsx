@@ -6,8 +6,10 @@ const CaseGraphic = ({
   initials = '', 
   IconComponent = null, 
   detailsColor = '#D4AF37',
-  baseImage,     // NUEVA PROPIEDAD
-  textureImage   // NUEVA PROPIEDAD
+  baseImage,
+  textureImage,
+  textSize = "text-3xl md:text-4xl", // Tamaño por defecto original
+  iconSize = 30                      // Tamaño por defecto original
 }) => {
   return (
     <div className="relative w-full flex items-center justify-center">
@@ -39,9 +41,9 @@ const CaseGraphic = ({
       {/* CAPA 3: Los Detalles */}
       {!isMini && (
         <div className="absolute inset-0 w-full h-full z-10 pointer-events-none">
-          {/* Iniciales */}
+         {/* Iniciales */}
           <div
-            className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-3xl md:text-4xl tracking-widest"
+            className={`absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 font-serif ${textSize} tracking-widest`}
             style={{
               color: detailsColor,
               textShadow: '0 0 3px rgba(255,255,255,0.5)' 
@@ -50,7 +52,7 @@ const CaseGraphic = ({
             {initials}
           </div>
           
-          {/* Icono Vectorial */}
+       {/* Icono Vectorial */}
           {IconComponent && (
             <div
               className="absolute bottom-[18%] left-1/2 -translate-x-1/2"
@@ -59,7 +61,7 @@ const CaseGraphic = ({
                 filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.4))'
               }}
             >
-              <IconComponent size={30} weight="fill" />
+              <IconComponent size={iconSize} weight="fill" />
             </div>
           )}
         </div>
