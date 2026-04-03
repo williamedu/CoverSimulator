@@ -11,6 +11,10 @@ import proMaxTextura from '../assets/models/iphone-promax_textura.png';
 import proBase from '../assets/models/iphone-pro_base.png';
 import proTextura from '../assets/models/iphone-pro_textura.png';
 
+// NUEVO: Importamos las imágenes del modelo normal
+import normalBase from '../assets/models/iphone-normal_base.png';
+import normalTextura from '../assets/models/iphone-normal_textura.png';
+
 // DICCIONARIO DE MODELOS DE CELULAR
 export const phoneModels = [
   {
@@ -24,6 +28,13 @@ export const phoneModels = [
     name: 'iPhone 13 / 14 Pro',
     baseImage: proBase,
     textureImage: proTextura
+  },
+  // NUEVO: Agregamos el modelo normal a la lista
+  {
+    id: 'iphone-normal',
+    name: 'iPhone 13 / 14 Normal',
+    baseImage: normalBase,
+    textureImage: normalTextura
   }
 ];
 
