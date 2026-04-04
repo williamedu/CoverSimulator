@@ -11,9 +11,9 @@ export default function Dashboard() {
       date: '3 de Abril de 2026',
       status: 'Nueva',
       customer: {
-        nombre: 'María',
+        nombre: 'eduardo',
         apellido: 'Domínguez',
-        correo: 'maria.d@email.com',
+        correo: 'williamH.d@email.com',
         telefono: '809-555-0123',
         sucursalBM: 'Piantini'
       },
