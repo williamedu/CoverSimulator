@@ -12,8 +12,11 @@
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/vite": "^4.2.2",
+    "axios": "^1.14.0",
+    "cheerio": "^1.2.0",
     "fabric": "^7.2.0",
     "framer-motion": "^12.38.0",
+    "puppeteer": "^24.40.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "zustand": "^5.0.12"

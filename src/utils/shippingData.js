@@ -1,0 +1,333 @@
+export const domexSucursales = [
+  {
+    "nombre": "DO.MLL - El Millón (Oficina Principal)",
+    "direccion": "C/ Plaza La Trinitaria #4, El Millón, DN, República Dominicana",
+    "telefono": "Tel. 809-616-6633",
+    "correo": "elmillon@domex.com.do",
+    "coordenadas": {
+      "lat": 18.462852299999998,
+      "lng": -69.9588428
+    }
+  },
+  {
+    "nombre": "DO.CJB - Ciudad Juan Bosch",
+    "direccion": "Avenida La Gaviota, Ciudad Juan Bosch, Plaza Trinitaria, Santo Domingo Este, Rep. Dom.",
+    "telefono": "Tel. 809-792-5115",
+    "correo": "ciudadjuanbosch@domex.com.do",
+    "coordenadas": {
+      "lat": 18.48733,
+      "lng": -69.750239
+    }
+  },
+  {
+    "nombre": "DO.FER - La Feria",
+    "direccion": "Avenida Jiménez Moya #115, esq. Calle Batalla del Memiso, Edificio Eduardo, Local 1A, La Feria, DN, República Dominicana",
+    "telefono": "Tel. 829-893-3496",
+    "correo": "laferia@domex.com.do",
+    "coordenadas": {
+      "lat": 18.454656411183723,
+      "lng": -69.92945470527157
+    }
+  },
+  {
+    "nombre": "DO.OZA - Ensanche Ozama",
+    "direccion": "Plaza Chess, calle Costa Rica #43, Esquina Mesoneria.​\n\n​",
+    "telefono": "Tel. 809-591-8589",
+    "correo": "ozama@domex.com.do",
+    "coordenadas": {
+      "lat": 18.492444799999998,
+      "lng": -69.8683818
+    }
+  },
+  {
+    "nombre": "DO.ALZ - Los Alcarrizos",
+    "direccion": "Autopista Duarte KM 14. Almacenes Garrido, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-508-5447",
+    "correo": "alcarrizos@domex.com.do",
+    "coordenadas": {
+      "lat": 18.51193,
+      "lng": -70.008395
+    }
+  },
+  {
+    "nombre": "DO.SID - San Isidro (Plaza Moderna)",
+    "direccion": "Autopista San Isidro, Coronel Rafael Tomás Fernández Domínguez, Plaza Moderna, 2do Piso, Santo Domingo Este, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-227-4587",
+    "correo": "sanisidro@domex.com.do",
+    "coordenadas": {
+      "lat": 18.498096,
+      "lng": -69.789964
+    }
+  },
+  {
+    "nombre": "DO.HRA - Herrera",
+    "direccion": "Av. Isabel Aguilar No. 102, Zona Industrial de Herrera, Santo Domingo Oeste, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-373-4122",
+    "correo": "herrera@domex.com.do",
+    "coordenadas": {
+      "lat": 18.446341,
+      "lng": -69.982392
+    }
+  },
+  {
+    "nombre": "DO.PFG - Federico Geraldino",
+    "direccion": "C/ Federico Geraldino no. 68, esq. David Ben Gurión, Plaza Stephanie local 3-A, 1er piso, Ens Piantini, D.N.\n\n​",
+    "telefono": "Tel. 809-552-1333",
+    "correo": "piantini@domex.com.do",
+    "coordenadas": {
+      "lat": 18.476757,
+      "lng": -69.939214
+    }
+  },
+  {
+    "nombre": "DO.EPA - La Esperilla",
+    "direccion": "Calle José Andrés Aybar No. 150, Local 01, La Esperilla, DN, República Dominicana\n\n​",
+    "telefono": "Tel. 809-960-9844",
+    "correo": "laesperilla@domex.com.do",
+    "coordenadas": {
+      "lat": 18.476757,
+      "lng": -69.939214
+    }
+  },
+  {
+    "nombre": "DO.MGZ - Máximo Gómez",
+    "direccion": "Ave. Máximo Gómez 131, Plaza Comercial Enriquillo, Local 3, Villa Juana, DN, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-542-4455",
+    "correo": "maximogomez@domex.com.do",
+    "coordenadas": {
+      "lat": 18.476757,
+      "lng": -69.939214
+    }
+  },
+  {
+    "nombre": "DO.SCA - San Carlos",
+    "direccion": "Av. México, Ed.34, Local No. 110, Villa Francisca (cerca del Barrio Chino), Distrito Nacional, Santo Domingo. \n\n​",
+    "telefono": "Tel. 809-221-0081",
+    "correo": "sancarlos@domex.com.do",
+    "coordenadas": {
+      "lat": 18.477818,
+      "lng": -69.890755
+    }
+  },
+  {
+    "nombre": "DO.ARH - Arroyo Hondo",
+    "direccion": "Av. Carlos Pérez Ricart #13, Plaza Virgen, Local 104, Arroyo Hondo II, DN, República Dominicana\n\n​",
+    "telefono": "Tel. 809-947-1378",
+    "correo": "arroyohondo@domex.com.do",
+    "coordenadas": {
+      "lat": 18.50072768634512,
+      "lng": -69.95713214751434
+    }
+  },
+  {
+    "nombre": "DO.IND - Av. Independencia",
+    "direccion": "Ave. Independencia, KM 10 1/2, Plaza Atalaya Del Mar, Local A-113, DN, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-378-6609",
+    "correo": "independencia@domex.com.do",
+    "coordenadas": {
+      "lat": 18.4337481,
+      "lng": -69.9826883
+    }
+  },
+  {
+    "nombre": "DO.BVT - Bella Vista",
+    "direccion": "Av. Rómulo Betancourt #316, Plaza Nicole, local 101, Bella Vista, DN, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-532-2728",
+    "correo": "bellavista@domex.com.do",
+    "coordenadas": {
+      "lat": 18.45274185620277,
+      "lng": -69.94471524668441
+    }
+  },
+  {
+    "nombre": "DO.CAG - Cacicazgos",
+    "direccion": "Av. Enriquillo #52, Los Cacicazgos, DN, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-770-3271",
+    "correo": "cacicazgos@domex.com.do",
+    "coordenadas": {
+      "lat": 18.4337481,
+      "lng": -69.9826883
+    }
+  },
+  {
+    "nombre": "DO.JDS - Jardines del Sur",
+    "direccion": "Avenida Independencia No. 2517, KM 6 1/2, Local Comercial 1-L3, Jardines del Sur, Santo Domingo, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-830-0441",
+    "correo": "cacique@domex.com.do",
+    "coordenadas": {
+      "lat": 18.44129503499901,
+      "lng": -69.94964697788963
+    }
+  },
+  {
+    "nombre": "DO.LRO- Los Ríos",
+    "direccion": "Calle H, No. 1 KM 9 Autopista Duarte Villa Marina, Nine Mall. Santo Domingo. República Dominicana.\n\n​",
+    "telefono": "Tel. 809-947-1379",
+    "correo": "losrios@domex.com.do",
+    "coordenadas": {
+      "lat": 18.481149029356708,
+      "lng": -69.96980361446107
+    }
+  },
+  {
+    "nombre": "DO.EVM- Evaristo Morales",
+    "direccion": "Av. Roberto Pastoriza #655-A, Edificio Díaz Velázquez, Local No.102, Evaristo Morales, DN, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-792-9999",
+    "correo": "evaristomorales@domex.com.do",
+    "coordenadas": {
+      "lat": 18.464107364422663,
+      "lng": -69.94334517961686
+    }
+  },
+  {
+    "nombre": "DO.LPD- Los Prados",
+    "direccion": "Ave. Charles Summer #35, Edificio Criscar VIII, Los Prados,\nDN, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-770-3443",
+    "correo": "losprados@domex.com.do",
+    "coordenadas": {
+      "lat": 18.476983,
+      "lng": -69.952094
+    }
+  },
+  {
+    "nombre": "DO.NAC- Naco",
+    "direccion": "C/ Salvador Sturla, esq. Gracita Álvarez #2, Plaza Diagonal Naco, Local 1, Naco, DN, República Dominicana.\n\n​",
+    "telefono": "Tel. 809-792-7810",
+    "correo": "naco@domex.com.do",
+    "coordenadas": {
+      "lat": 18.483207450451456,
+      "lng": -69.92909398930941
+    }
+  },
+  {
+    "nombre": "DO.ZUV- Zona Universitaria",
+    "direccion": "Av. Correa y Cidrón esq. Abel Amin Hasbún, Edif. Ana Adela I, Apto. 101, Zona Universitaria, D.N., República Dominicana.\n\n​",
+    "telefono": "Tel. 809-947-1370",
+    "correo": "zonauniversitaria@domex.com.do",
+    "coordenadas": {
+      "lat": 18.4602916,
+      "lng": -69.9158719
+    }
+  },
+  {
+    "nombre": "DO.BCA- Boca Chica",
+    "direccion": "Autopista las Américas KM 31 #100 Esq. José Francisco Peña Gómez, Boca Chica Frente a la Bomba Total, República Dominicana\n\n​​",
+    "telefono": "Tel. 809-523-9009",
+    "correo": "bocachica@domex.com.do",
+    "coordenadas": {
+      "lat": 18.4553095,
+      "lng": -69.6061104
+    }
+  },
+  {
+    "nombre": "DO.CMA- Carretera Mella",
+    "direccion": "Carretera Mella, Km. 8 ½, Plaza Sambuka, Local 1-K,\nSanto Domingo Este, República Dominicana.\n\n​​",
+    "telefono": "Tel. 809-518-5920",
+    "correo": "carreteramella@domex.com.do",
+    "coordenadas": {
+      "lat": 18.514346,
+      "lng": -69.843232
+    }
+  },
+  {
+    "nombre": "DO.FRE- Los Frailes",
+    "direccion": "Marginal Las Américas esquina Calle Camino 2do, Plaza Yacol Local 1-B Sector Los Frailes, Santo Domingo Este.\n\n​​",
+    "telefono": "Tel. 809-599-9700",
+    "correo": "losfrailes@domex.com.do",
+    "coordenadas": {
+      "lat": 18.465237,
+      "lng": -69.815311
+    }
+  },
+  {
+    "nombre": "DO.SDE- Santo Domingo Este",
+    "direccion": "Ave. San Vicente de Paul esq. Calle Bonaire No. 280, Plaza Bonaire, Local 108, Alma Rosa I, Santo Domingo Este, República Dominicana\n\n​​",
+    "telefono": "Tel. 809-594-3023",
+    "correo": "santodomingoeste@domex.com.do",
+    "coordenadas": {
+      "lat": 18.492903,
+      "lng": -69.851128
+    }
+  },
+  {
+    "nombre": "DO.VMA- Villa Mella",
+    "direccion": "Av. Hermanas Mirabal KM 10 1/2, Plaza del Norte, Local 26, Villa Mella, República Dominicana.\n\n​​",
+    "telefono": "Tel. 809-518-5926",
+    "correo": "villamella@domex.com.do",
+    "coordenadas": {
+      "lat": 18.514346,
+      "lng": -69.843232
+    }
+  },
+  {
+    "nombre": "DO.SPA- Sabana Perdida",
+    "direccion": "Av. Los Restauradores, No. 20, Primer Piso, Local 1, Villa Blanca, Sabana Perdida, Santo Domingo Norte.\n\n​​",
+    "telefono": "Tel.  809-755-2190",
+    "correo": "sabanaperdida@domex.com.do",
+    "coordenadas": {
+      "lat": 18.534381546177293,
+      "lng": -69.86676228932835
+    }
+  },
+  {
+    "nombre": "DO.ELP- Ensanche Luperón",
+    "direccion": "Ave. Padre Castellanos No. 274, esq. Josefa Brea, Uptown Plaza\nVilla María, DN, República Dominicana.\n\n​​",
+    "telefono": "Tel. 809-556-8060",
+    "correo": "luperon@domex.com.do",
+    "coordenadas": {
+      "lat": 18.463686,
+      "lng": -69.942856
+    }
+  },
+  {
+    "nombre": "DO.MNT- Avenida Monumental",
+    "direccion": "Av. Monumental #22, Plaza Micro continental, local 104, Los Peralejos, Distrito Nacional, Santo Domingo.\n\n​​",
+    "telefono": "Tel. 829-822-7555",
+    "correo": "monumental@domex.com.do",
+    "coordenadas": {
+      "lat": 18.505144638050812,
+      "lng": -69.98993350662766
+    }
+  },
+  {
+    "nombre": "DO.CDM- Ciudad Modelo",
+    "direccion": "Av. Jacobo Majluta 22, Plaza Tellus, Local 12,  Santo Domingo Norte, República Dominicana 11301\n\n​​",
+    "telefono": "Tel. 809-616-6633",
+    "correo": "ciudadmodelo@domex.com.do",
+    "coordenadas": {
+      "lat": 18.552195,
+      "lng": -69.926637
+    }
+  },
+  {
+    "nombre": "DO.SDO- Santo Domingo Oeste",
+    "direccion": "Prol. Ave. 27 de Febrero esq. Ave. Los Beisbolistas, Plaza A&R , Local 03, Manoguayabo, Santo Domingo Oeste, República Dominicana\n\n​​",
+    "telefono": "Tel. 809-372-2882",
+    "correo": "sdoesteherrera@domex.com.do",
+    "coordenadas": {
+      "lat": 18.483646,
+      "lng": -69.998401
+    }
+  },
+  {
+    "nombre": "DO.CLA- Claro",
+    "direccion": "Ave. John F. Kennedy No 54, Edif. Corporativo Claro,\n\nDept. Mensajería. D.N. República Dominicana.\n\n​​\n\nTel.",
+    "telefono": "Tel.  809-220-2289",
+    "correo": "Correo no encontrado",
+    "coordenadas": {
+      "lat": 18.502042423577688,
+      "lng": -69.92323879826075
+    }
+  },
+  {
+    "nombre": "DO.LOG- Centro Logístico",
+    "direccion": "Autopista Duarte Km. 18, Cayacoa, 21101. Santo Domingo\n\n​​",
+    "telefono": "Tel. 809-682-2022",
+    "correo": "centrologistico@domex.com.do",
+    "coordenadas": {
+      "lat": 18.5499516,
+      "lng": -70.0332754
+    }
+  }
+  
+];

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import CaseGraphic from './CaseGraphic'; // <--- Importamos el visualizador
+import CaseGraphic from './CaseGraphic';
+import { domexSucursales } from '../utils/shippingData'; // <--- NUEVA IMPORTACIÓN
 
 export default function CheckoutForm({ onBack, designData }) {
   // Estado para guardar lo que el cliente escribe
@@ -8,9 +9,11 @@ export default function CheckoutForm({ onBack, designData }) {
     apellido: '',
     correo: '',
     telefono: '',
-    sucursalBM: ''
+   sucursalDomex: '' // <--- Cambiado de sucursalBM
   });
 
+  // NUEVO ESTADO: Guarda toda la info de la sucursal seleccionada para el mapa
+  const [selectedBranch, setSelectedBranch] = useState(null);
   // Función para actualizar el estado cuando escriben
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -73,10 +76,68 @@ export default function CheckoutForm({ onBack, designData }) {
           </div>
 
           {/* BM Cargo */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Sucursal de BM Cargo</label>
-            <input type="text" name="sucursalBM" required onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1a1a1a] transition-colors" placeholder="Ej. Piantini, Santiago, etc." />
-            <p className="text-xs text-gray-500 mt-2">Indica la sucursal donde deseas retirar tu pedido.</p>
+         {/* ========================================== */}
+          {/* SECCIÓN DE ENVÍO DOMEX CON MAPA INTEGRADO    */}
+          {/* ========================================== */}
+          <div className="pt-4 border-t border-gray-100">
+            <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Método de Envío</h3>
+            
+            <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
+              Selecciona tu sucursal Domex
+            </label>
+            
+            <select 
+              name="sucursalDomex" 
+              required 
+              onChange={(e) => {
+                handleChange(e); // Actualiza los datos del formulario
+                // Busca la sucursal completa en nuestra base de datos para mostrar el mapa
+                const branchObj = domexSucursales.find(b => b.nombre === e.target.value);
+                setSelectedBranch(branchObj || null);
+              }} 
+              className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1a1a1a] transition-colors cursor-pointer bg-white"
+            >
+              <option value="">-- Elige una sucursal cercana --</option>
+              {domexSucursales.map((sucursal, index) => (
+                <option key={index} value={sucursal.nombre}>
+                  {sucursal.nombre}
+                </option>
+              ))}
+            </select>
+
+            {/* LA MAGIA: EL VISOR DEL MAPA Y DETALLES */}
+            {selectedBranch && (
+              <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg overflow-hidden animate-fade-in">
+                
+                {/* Si tenemos coordenadas, mostramos el mapa de Google en un iframe */}
+                {selectedBranch.coordenadas ? (
+                  <div className="w-full h-48 bg-gray-200 relative">
+                    <iframe 
+                      width="100%" 
+                      height="100%" 
+                      style={{ border: 0 }} 
+                      loading="lazy" 
+                      allowFullScreen 
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://maps.google.com/maps?q=${selectedBranch.coordenadas.lat},${selectedBranch.coordenadas.lng}&z=16&output=embed`}
+                    ></iframe>
+                  </div>
+                ) : (
+                  <div className="w-full h-24 bg-gray-200 flex items-center justify-center">
+                    <p className="text-xs text-gray-500 uppercase tracking-widest">Mapa no disponible para esta sucursal</p>
+                  </div>
+                )}
+
+                {/* Detalles de la sucursal extraídos por nuestro bot */}
+                <div className="p-4">
+                  <p className="text-sm text-gray-800 font-medium mb-1">{selectedBranch.direccion}</p>
+                  <div className="flex flex-col sm:flex-row sm:gap-4 text-xs text-gray-600 mt-2">
+                    <span className="flex items-center gap-1">📞 {selectedBranch.telefono}</span>
+                    <span className="flex items-center gap-1">✉️ {selectedBranch.correo}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
             {/* Botón Final */}
