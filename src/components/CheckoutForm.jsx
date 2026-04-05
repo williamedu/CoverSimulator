@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebase/config"; 
 import CaseGraphic from './CaseGraphic';
 import { domexSucursales } from '../utils/shippingData'; 
+import { iconsList } from '../utils/constants'; // <-- AGREGA ESTA LÍNEA AQUÍ
+
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; 
@@ -14,6 +18,8 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 export default function CheckoutForm({ onBack, designData }) {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -22,20 +28,19 @@ export default function CheckoutForm({ onBack, designData }) {
     sucursalDomex: '' 
   });
 
-  // DETECTOR DE DISPOSITIVO: ¿Es un celular o una tablet?
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedBranch, setSelectedBranch] = useState(null);
   
+  const [paymentMethod, setPaymentMethod] = useState('transferencia');
+  const [showBankModal, setShowBankModal] = useState(false);
+  const [orderId, setOrderId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
   const [isLocating, setIsLocating] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [closestBranches, setClosestBranches] = useState([]);
-  
-  // 1️⃣ NUEVO ESTADO: Guardamos la ubicación exacta del cliente
   const [userLocation, setUserLocation] = useState(null);
 
   const regionesUnicas = [...new Set(domexSucursales.map(s => s.region))];
@@ -69,8 +74,6 @@ export default function CheckoutForm({ onBack, designData }) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        
-        // 2️⃣ GUARDAMOS LAS COORDENADAS DEL CLIENTE
         setUserLocation({ lat: latitude, lng: longitude });
         
         const branchesWithDistance = domexSucursales
@@ -88,13 +91,13 @@ export default function CheckoutForm({ onBack, designData }) {
       },
       (error) => {
         console.error("Error obteniendo ubicación:", error);
-      alert(
-  "📍 ¡Ups! El GPS está bloqueado.\n\n" +
-  "Para usar esta función:\n" +
-  "• En iPhone (Safari): Ve a Configuración > Privacidad > Localización > Safari y elige 'Al usar la app'.\n" +
-  "• En Android/Chrome: Toca el candadito (🔒) en la barra de direcciones de arriba y activa la 'Ubicación'.\n\n" +
-  "Luego, recarga esta página y vuelve a intentarlo."
-);
+        alert(
+          "📍 ¡Ups! El GPS está bloqueado.\n\n" +
+          "Para usar esta función:\n" +
+          "• En iPhone (Safari): Ve a Configuración > Privacidad > Localización > Safari y elige 'Al usar la app'.\n" +
+          "• En Android/Chrome: Toca el candadito (🔒) en la barra de direcciones y activa la 'Ubicación'.\n\n" +
+          "Luego, recarga esta página y vuelve a intentarlo."
+        );
         setIsLocating(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -110,12 +113,69 @@ export default function CheckoutForm({ onBack, designData }) {
     setSearchTerm(''); 
   };
 
-  const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("DISEÑO ELEGIDO:", designData);
-    console.log("DATOS DEL CLIENTE:", formData);
-    alert("¡Simulación exitosa! Revisa la consola.");
+    setIsSubmitting(true);
+    
+    // NUEVO: Buscamos cuál es el ID en texto del componente que el usuario eligió
+    const selectedIconObj = iconsList.find(icon => icon.component === designData.IconComponent);
+    const iconIdToSave = selectedIconObj ? selectedIconObj.id : null;
+    
+    const ordenData = {
+      cliente_nombre: `${formData.nombre} ${formData.apellido}`.trim(),
+      cliente_telefono: formData.telefono,
+      cliente_correo: formData.correo,
+      
+      dispositivo_modelo: designData.modelo,
+      dispositivo_color_base: designData.colorBase || "No especificado",
+      dispositivo_color_hex: designData.hex || "#333333", 
+      
+      personalizacion: {
+        texto: designData.iniciales || "",
+        iconoId: iconIdToSave,                 // <-- AHORA SÍ GUARDAMOS EL ID ENCONTRADO
+        color_letras_hex: designData.detailsColor || "#D4AF37" 
+      },
+      
+      logistica: {
+        tipo_entrega: selectedRegion ? "agencia" : "personal",
+        carrier_nombre: selectedRegion ? "Domex" : "",
+        carrier_region: selectedRegion || "",
+        carrier_sucursal: selectedBranch ? selectedBranch.nombre : "",
+        carrier_direccion: selectedBranch ? selectedBranch.direccion : ""
+      },
+      
+      metadatos: {
+        fecha_creacion: new Date().toISOString(),
+        estado: paymentMethod === 'transferencia' ? 'pendiente_verificacion' : 'pendiente',
+        total_pagar: 1500, 
+        metodo_pago: paymentMethod
+      }
+    };
+
+
+    try {
+      const docRef = await addDoc(collection(db, "ordenes"), ordenData);
+      const generatedId = docRef.id.slice(-6).toUpperCase();
+      setOrderId(generatedId);
+      
+      if (paymentMethod === 'transferencia') {
+        setShowBankModal(true); 
+      } else {
+        alert(`Redirigiendo a Stripe para el pedido #${generatedId}... (Próximamente)`);
+      }
+      
+    } catch (error) {
+      console.error("Error guardando el pedido: ", error);
+      alert("Hubo un pequeño error de conexión. Por favor, intenta de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // NÚMERO DE WHATSAPP (Ajusta esto a tu número real)
+  const miNumeroWhatsApp = "8094883317"; 
+  const mensajeWhatsApp = `¡Hola! Acabo de realizar el pedido *#${orderId}*. Aquí te envío mi comprobante de transferencia:`;
+  const linkWhatsApp = `https://wa.me/${miNumeroWhatsApp}?text=${encodeURIComponent(mensajeWhatsApp)}`;
 
   return (
    <div className="w-full max-w-5xl mx-auto p-4 lg:p-8 animate-fade-in relative">
@@ -126,8 +186,8 @@ export default function CheckoutForm({ onBack, designData }) {
           <div className="flex-1">
             <div className="border-b border-gray-200 pb-4 mb-6 flex justify-between items-end">
               <div>
-                <h2 className="text-3xl font-serif text-gray-900 mb-2">Detalles de Envío</h2>
-                <p className="text-sm text-gray-600">Recogida en sucursal Domex.</p>
+                <h2 className="text-3xl font-serif text-gray-900 mb-2">Checkout</h2>
+                <p className="text-sm text-gray-600">Completa tus datos para procesar la orden.</p>
               </div>
               <button 
                 onClick={onBack}
@@ -165,7 +225,6 @@ export default function CheckoutForm({ onBack, designData }) {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Método de Envío (Domex)</h3>
                   
-                 {/* EL BOTÓN MÁGICO DE GPS (Solo visible en celulares) */}
                   {isMobile && (
                     <button 
                       type="button"
@@ -235,7 +294,6 @@ export default function CheckoutForm({ onBack, designData }) {
                   <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg overflow-hidden animate-fade-in shadow-sm">
                     {selectedBranch.coordenadas ? (
                       <div className="w-full h-48 bg-gray-200 relative">
-                        {/* 3️⃣ EL TRUCO MAGISTRAL EN EL IFRAME */}
                         <iframe 
                           width="100%" 
                           height="100%" 
@@ -243,43 +301,90 @@ export default function CheckoutForm({ onBack, designData }) {
                           loading="lazy" 
                           allowFullScreen 
                           referrerPolicy="no-referrer-when-downgrade"
-                         src={
-    userLocation && isMobile
-      ? `https://maps.google.com/maps?q=${userLocation.lat},${userLocation.lng}&daddr=${selectedBranch.coordenadas.lat},${selectedBranch.coordenadas.lng}&hl=es&output=embed`
-      : `https://maps.google.com/maps?q=${selectedBranch.coordenadas.lat},${selectedBranch.coordenadas.lng}&hl=es&z=16&output=embed`
-  }
+                          src={
+                            userLocation && isMobile
+                              ? `https://www.google.com/maps?saddr=${userLocation.lat},${userLocation.lng}&daddr=${selectedBranch.coordenadas.lat},${selectedBranch.coordenadas.lng}&hl=es&output=embed`
+                              : `https://maps.google.com/maps?q=${selectedBranch.coordenadas.lat},${selectedBranch.coordenadas.lng}&hl=es&z=16&output=embed`
+                          }
                         ></iframe>
                       </div>
                     ) : (
                       <div className="w-full h-24 bg-gray-200 flex items-center justify-center">
-                        <p className="text-xs text-gray-500 uppercase tracking-widest">Mapa no disponible para esta sucursal</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest">Mapa no disponible</p>
                       </div>
                     )}
-
-                    <div className="p-4">
-                      <h4 className="font-bold text-gray-800 text-sm mb-1">{formatBranchName(selectedBranch.nombre)}</h4>
-                      <p className="text-sm text-gray-600 mb-2">{selectedBranch.direccion}</p>
-                      <div className="flex flex-col sm:flex-row sm:gap-4 text-xs font-medium text-gray-700 bg-white p-2 rounded border border-gray-100">
-                        <span className="flex items-center gap-1">📞 {selectedBranch.telefono}</span>
-                        {selectedBranch.correo !== 'Correo no publicado' && (
-                          <span className="flex items-center gap-1">✉️ {selectedBranch.correo}</span>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>
 
+              <div className="pt-6 border-t border-gray-100">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Método de Pago</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  <label className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${paymentMethod === 'transferencia' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}>
+                    <input 
+                      type="radio" 
+                      name="payment_method" 
+                      value="transferencia" 
+                      className="peer sr-only" 
+                      checked={paymentMethod === 'transferencia'}
+                      onChange={() => setPaymentMethod('transferencia')}
+                    />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🏦</span>
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm">Transferencia Bancaria</p>
+                          <p className="text-xs text-gray-500">Popular / BHD</p>
+                        </div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'transferencia' ? 'border-black' : 'border-gray-300'}`}>
+                        {paymentMethod === 'transferencia' && <div className="w-2.5 h-2.5 rounded-full bg-black"></div>}
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${paymentMethod === 'stripe' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}>
+                    <input 
+                      type="radio" 
+                      name="payment_method" 
+                      value="stripe" 
+                      className="peer sr-only" 
+                      checked={paymentMethod === 'stripe'}
+                      onChange={() => setPaymentMethod('stripe')}
+                    />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">💳</span>
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm">Tarjeta de Crédito</p>
+                          <p className="text-xs text-green-600 font-medium">Próximamente</p>
+                        </div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'stripe' ? 'border-black' : 'border-gray-300'}`}>
+                        {paymentMethod === 'stripe' && <div className="w-2.5 h-2.5 rounded-full bg-black"></div>}
+                      </div>
+                    </div>
+                  </label>
+
+                </div>
+              </div>
+
               <div className="pt-6">
-                <button type="submit" className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-4 px-6 rounded transition-colors text-lg shadow-xl">
-                  Finalizar Pedido
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting || !selectedRegion}
+                  className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-4 px-6 rounded transition-colors text-lg shadow-xl disabled:bg-gray-400 flex justify-center items-center gap-2"
+                >
+                  {isSubmitting ? 'Procesando...' : (paymentMethod === 'transferencia' ? 'Completar Orden (RD$ 1,500)' : 'Pagar con Tarjeta')}
                 </button>
+                {!selectedRegion && <p className="text-center text-xs text-red-500 mt-2">Por favor, selecciona una sucursal de envío para continuar.</p>}
               </div>
             </form>
           </div>
   
           <div className="w-full lg:w-72 bg-gray-50 rounded-xl p-6 border border-gray-100 self-start">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 text-center">Tu Diseño</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 text-center">Resumen de Orden</h3>
             
             <div className="relative w-full aspect-[2/3] mb-6 drop-shadow-2xl">
               <CaseGraphic 
@@ -304,11 +409,17 @@ export default function CheckoutForm({ onBack, designData }) {
                 <span className="text-gray-500">Iniciales:</span>
                 <span className="font-bold text-gray-700">{designData.iniciales || 'Ninguna'}</span>
               </div>
+              
+              <div className="border-t border-dashed border-gray-300 my-4 pt-4 flex justify-between items-center">
+                <span className="text-sm font-bold text-gray-900">Total:</span>
+                <span className="text-lg font-black text-black">RD$ 1,500</span>
+              </div>
             </div>
           </div>
         </div> 
       </div>
 
+      {/* 1. MODAL DE SUCURSALES */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden">
@@ -374,6 +485,7 @@ export default function CheckoutForm({ onBack, designData }) {
         </div>
       )}
 
+      {/* 2. MODAL DE UBICACIONES CERCANAS */}
       {showLocationModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
@@ -426,6 +538,68 @@ export default function CheckoutForm({ onBack, designData }) {
               ))}
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* 3. MODAL DE INSTRUCCIONES DE TRANSFERENCIA */}
+      {showBankModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden text-center">
+            
+            <div className="bg-green-500 p-6 text-white">
+              <div className="text-5xl mb-2">✅</div>
+              <h2 className="text-2xl font-bold">¡Orden Creada!</h2>
+              <p className="text-green-100 mt-1">Falta 1 paso para procesarla</p>
+            </div>
+
+            <div className="p-6">
+              <p className="text-gray-600 text-sm mb-6">
+                Tu orden <strong className="text-black">#{orderId}</strong> está en espera de pago. Por favor, transfiere <strong className="text-black">RD$ 1,500</strong> a una de las siguientes cuentas:
+              </p>
+
+              <div className="space-y-4 text-left">
+                {/* BANCO 1 */}
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Banco Popular</p>
+                  <p className="font-bold text-gray-900">Cuenta de Ahorros</p>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xl font-mono text-blue-600">798 555 1234</p>
+                    <button onClick={() => navigator.clipboard.writeText('7985551234')} className="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">Copiar</button>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">A nombre de: William Hiciano</p>
+                </div>
+
+                {/* BANCO 2 */}
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Banco BHD</p>
+                  <p className="font-bold text-gray-900">Cuenta Corriente</p>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xl font-mono text-blue-600">123 4567 890</p>
+                    <button onClick={() => navigator.clipboard.writeText('1234567890')} className="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">Copiar</button>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">A nombre de: William Hiciano</p>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide font-bold">¿Ya hiciste el pago?</p>
+                <a 
+                  href={linkWhatsApp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1DA851] text-white font-bold py-4 px-6 rounded-xl transition-colors shadow-lg shadow-green-500/30"
+                >
+                  <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                  Enviar Comprobante
+                </a>
+                
+                <button onClick={() => window.location.reload()} className="mt-4 text-sm font-bold text-gray-400 hover:text-gray-800 transition-colors">
+                  Cerrar y volver al inicio
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
       )}
