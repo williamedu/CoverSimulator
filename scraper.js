@@ -1,156 +1,167 @@
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 
-const url = 'https://www.domex.do/santodomingo';
+const rutasAExplorar = [
+  { url: 'https://www.domex.do/santodomingo', region: 'Santo Domingo' },
+  { url: 'https://www.domex.do/region-este', region: 'Región Este' },
+  { url: 'https://www.domex.do/region-norte', region: 'Región Norte' },
+  { url: 'https://www.domex.do/region-sur', region: 'Región Sur' }
+];
 
-async function laFusionDefinitiva() {
-  console.log(`Iniciando La Fusión Definitiva en: ${url}...\n`);
+async function extraccionNacional() {
+  console.log('🚀 INICIANDO EXTRACCIÓN A NIVEL NACIONAL...\n');
+  const sucursalesNacionales = []; 
 
   try {
     const browser = await puppeteer.launch({ headless: "new" });
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 800 });
-    await page.goto(url, { waitUntil: 'networkidle2' });
-    
-    console.log('1️⃣ Haciendo Scroll profundo para despertar a Wix (10-15 segs)...');
 
-    await page.evaluate(async () => {
-      await new Promise((resolve) => {
-        let totalHeight = 0;
-        let distance = 300;
-        let timer = setInterval(() => {
-          let scrollHeight = document.body.scrollHeight;
-          window.scrollBy(0, distance);
-          totalHeight += distance;
-
-          if (totalHeight >= scrollHeight - window.innerHeight) {
-            clearInterval(timer);
-            resolve();
-          }
-        }, 400); 
-      });
-    });
-
-    console.log('2️⃣ Scroll terminado. Extrayendo los Textos...');
-    await new Promise(r => setTimeout(r, 2000)); 
-
-    // --- PARTE 1: EXTRAER TEXTOS Y SU ALTURA (Y) ---
-    const bloquesTexto = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('div[data-testid="richTextElement"]'))
-        .map(el => {
-          const textoCompleto = el.innerText.trim();
-          const rect = el.getBoundingClientRect();
-          return { textoCompleto, y: rect.top + window.scrollY };
-        })
-        .filter(item => item.textoCompleto.includes('DO.') && item.textoCompleto.includes('Tel.'));
-    });
-
-    console.log(`   -> Textos encontrados: ${bloquesTexto.length}`);
-    console.log('3️⃣ Hackeando las muñecas rusas para sacar mapas y su altura...');
-
-    // --- PARTE 2: EXTRAER MAPAS DE LOS FRAMES OCULTOS Y SU ALTURA (Y) ---
-    const mapasEncontrados = [];
-    
-    for (const frame of page.frames()) {
-      const frameUrl = frame.url();
+    for (const ruta of rutasAExplorar) {
+      console.log(`\n==================================================`);
+      console.log(`📍 Explorando: ${ruta.region} -> ${ruta.url}`);
+      console.log(`==================================================`);
       
-      // Si el frame escondido es de Google Maps
-      if (frameUrl.includes('google') && (frameUrl.includes('!2d') || frameUrl.includes('ll='))) {
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1280, height: 800 });
+
+      try {
+        await page.goto(ruta.url, { waitUntil: 'networkidle2' });
         
-        // Sacamos las coordenadas usando nuestra vieja confiable Regex
-        const matchRegex = frameUrl.match(/!3d(-?\d+\.\d+).*?!2d(-?\d+\.\d+)/) || 
-                           frameUrl.match(/!2d(-?\d+\.\d+).*?!3d(-?\d+\.\d+)/) ||
-                           frameUrl.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-                           
-        if (matchRegex) {
-          const num1 = parseFloat(matchRegex[1]);
-          const num2 = parseFloat(matchRegex[2]);
-          const lat = Math.abs(num1) < 25 ? num1 : num2; 
-          const lng = Math.abs(num1) > 60 ? num1 : num2; 
+        console.log('1️⃣ Haciendo Scroll profundo (10-15 segs)...');
+        await page.evaluate(async () => {
+          await new Promise((resolve) => {
+            let totalHeight = 0;
+            let distance = 300;
+            let timer = setInterval(() => {
+              let scrollHeight = document.body.scrollHeight;
+              window.scrollBy(0, distance);
+              totalHeight += distance;
 
-          // EL TRUCO MAGISTRAL: Buscamos qué tan abajo en la página está este mapa
-          let alturaY = 0;
-          try {
-            // Caminamos hacia "arriba" desde la muñeca pequeña hasta la caja principal
-            let currentFrame = frame;
-            let parent = currentFrame.parentFrame();
-            
-            while (parent && parent !== page.mainFrame()) {
-              currentFrame = parent;
-              parent = currentFrame.parentFrame();
-            }
-            
-            // Obtenemos el elemento de la página principal
-            const frameHandle = await currentFrame.frameElement();
-            if (frameHandle) {
-              alturaY = await frameHandle.evaluate(el => el.getBoundingClientRect().top + window.scrollY);
-            }
-          } catch (e) {
-            // Ignoramos errores si el frame se mueve o desaparece
-          }
+              if (totalHeight >= scrollHeight - window.innerHeight) {
+                clearInterval(timer);
+                resolve();
+              }
+            }, 400); 
+          });
+        });
 
-          if (alturaY > 0) {
-            mapasEncontrados.push({ lat, lng, y: alturaY });
+        console.log('2️⃣ Extrayendo Textos y Alturas con lectura flexible...');
+        await new Promise(r => setTimeout(r, 2000)); 
+
+        const bloquesTexto = await page.evaluate(() => {
+          return Array.from(document.querySelectorAll('div[data-testid="richTextElement"]'))
+            .map(el => {
+              const textoCompleto = el.innerText.trim();
+              const rect = el.getBoundingClientRect();
+              return { textoCompleto, y: rect.top + window.scrollY };
+            })
+            // FILTRO RELAJADO: Si tiene arroba o la palabra Tel/Cel, o números de teléfono, lo agarramos
+            .filter(item => item.textoCompleto.includes('@') || item.textoCompleto.match(/\d{3}-\d{3}-\d{4}/));
+        });
+
+        console.log(`   -> Textos de sucursales encontrados: ${bloquesTexto.length}`);
+        console.log('3️⃣ Hackeando los frames ocultos para sacar mapas...');
+
+        const mapasEncontrados = [];
+        for (const frame of page.frames()) {
+          const frameUrl = frame.url();
+          if (frameUrl.includes('google') && (frameUrl.includes('!2d') || frameUrl.includes('ll='))) {
+            const matchRegex = frameUrl.match(/!3d(-?\d+\.\d+).*?!2d(-?\d+\.\d+)/) || 
+                               frameUrl.match(/!2d(-?\d+\.\d+).*?!3d(-?\d+\.\d+)/) ||
+                               frameUrl.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                               
+            if (matchRegex) {
+              const num1 = parseFloat(matchRegex[1]);
+              const num2 = parseFloat(matchRegex[2]);
+              const lat = Math.abs(num1) < 25 ? num1 : num2; 
+              const lng = Math.abs(num1) > 60 ? num1 : num2; 
+
+              let alturaY = 0;
+              try {
+                let currentFrame = frame;
+                let parent = currentFrame.parentFrame();
+                while (parent && parent !== page.mainFrame()) {
+                  currentFrame = parent;
+                  parent = currentFrame.parentFrame();
+                }
+                const frameHandle = await currentFrame.frameElement();
+                if (frameHandle) {
+                  alturaY = await frameHandle.evaluate(el => el.getBoundingClientRect().top + window.scrollY);
+                }
+              } catch (e) {}
+
+              if (alturaY > 0) {
+                mapasEncontrados.push({ lat, lng, y: alturaY });
+              }
+            }
           }
         }
+
+        console.log(`   -> Mapas interceptados: ${mapasEncontrados.length}`);
+        console.log('4️⃣ Emparejando y guardando datos...');
+
+        // NUEVO PARSEO DE TEXTO (Súper flexible a errores humanos)
+        bloquesTexto.forEach(bloque => {
+          const texto = bloque.textoCompleto;
+          
+          // Dividimos todo el texto en líneas separadas
+          const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+          // Asumimos que la primera línea SIEMPRE es el nombre de la sucursal
+          const nombre = lineas[0] || 'Sucursal Desconocida';
+
+          // Buscamos el teléfono con formato X-X-X
+          const matchTel = texto.match(/([\d]{3}-[\d]{3}-[\d]{4})/);
+          const telefono = matchTel ? matchTel[0] : 'Teléfono no publicado';
+
+          // Buscamos el correo con el arroba
+          const matchEmail = texto.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4})/);
+          const correo = matchEmail ? matchEmail[0] : 'Correo no publicado';
+          
+          // La dirección suele estar en la línea 2 (y a veces la 3)
+          let direccion = lineas.length > 1 ? lineas[1] : 'Ver dirección en el mapa';
+          if (lineas.length > 2 && !lineas[2].includes('@') && !lineas[2].match(/\d{3}-\d{3}-\d{4}/)) {
+             direccion += ', ' + lineas[2]; // Unimos línea 2 y 3 si no son teléfonos ni correos
+          }
+
+          let mapaMasCercano = null;
+          let menorDiferencia = Infinity;
+
+          mapasEncontrados.forEach(mapa => {
+            const diferencia = Math.abs(mapa.y - bloque.y);
+            if (diferencia < menorDiferencia && diferencia < 450) { // Amplié el margen de búsqueda a 450px
+              menorDiferencia = diferencia;
+              mapaMasCercano = mapa;
+            }
+          });
+
+          sucursalesNacionales.push({
+            region: ruta.region,
+            nombre,
+            direccion,
+            telefono,
+            correo,
+            coordenadas: mapaMasCercano ? { lat: mapaMasCercano.lat, lng: mapaMasCercano.lng } : null
+          });
+        });
+
+      } catch (err) {
+        console.error(`❌ Error explorando ${ruta.region}:`, err.message);
+      } finally {
+        await page.close();
       }
     }
 
-    console.log(`   -> Mapas interceptados: ${mapasEncontrados.length}`);
-    console.log('4️⃣ Emparejando Textos con Mapas mediante Inteligencia Visual...');
-
-    // --- PARTE 3: EMPAREJARLOS EN NODE.JS ---
-    const sucursalesFinales = bloquesTexto.map(bloque => {
-      // Parsear datos
-      const matchNombre = bloque.textoCompleto.match(/(DO\.[^\n]+)/);
-      const matchTel = bloque.textoCompleto.match(/(Tel\.\s*[\d-]+)/);
-      const matchEmail = bloque.textoCompleto.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4})/);
-      
-      const nombre = matchNombre ? matchNombre[1].trim() : 'Nombre no encontrado';
-      const telefono = matchTel ? matchTel[1].trim() : 'Tel no encontrado';
-      const correo = matchEmail ? matchEmail[1].trim() : 'Correo no encontrado';
-      
-      let direccion = 'Dirección no encontrada';
-      if (matchNombre && matchTel) {
-        const startIndex = bloque.textoCompleto.indexOf(matchNombre[1]) + matchNombre[1].length;
-        const endIndex = bloque.textoCompleto.indexOf(matchTel[1]);
-        direccion = bloque.textoCompleto.substring(startIndex, endIndex).trim().replace(/^\n+|\n+$/g, '');
-      }
-
-      // Buscar el mapa más cercano (emparejamiento visual)
-      let mapaMasCercano = null;
-      let menorDiferencia = Infinity;
-
-      mapasEncontrados.forEach(mapa => {
-        const diferencia = Math.abs(mapa.y - bloque.y);
-        // Si la distancia visual es menor a 400 pixeles, pertenecen a la misma sucursal
-        if (diferencia < menorDiferencia && diferencia < 400) {
-          menorDiferencia = diferencia;
-          mapaMasCercano = mapa;
-        }
-      });
-
-      return {
-        nombre,
-        direccion,
-        telefono,
-        correo,
-        coordenadas: mapaMasCercano ? { lat: mapaMasCercano.lat, lng: mapaMasCercano.lng } : null
-      };
-    });
-
     await browser.close();
 
-    console.log('\n✅ ¡EXTRACCIÓN TOTAL Y PERFECTA COMPLETADA!');
-    console.log(`🎯 Su base de datos está lista, jefe:\n`);
-    console.log(JSON.stringify(sucursalesFinales, null, 2));
-
-    fs.writeFileSync('domex_sucursales_final.json', JSON.stringify(sucursalesFinales, null, 2));
-    console.log('\n💾 Guardado en "domex_sucursales_final.json". ¡Es hora de ir a React!');
+    console.log('\n✅ ¡MISIÓN CUMPLIDA! EXTRACCIÓN NACIONAL FINALIZADA.');
+    console.log(`🎯 Total de sucursales extraídas en todo el país: ${sucursalesNacionales.length}\n`);
+    
+    fs.writeFileSync('domex_sucursales_nacional.json', JSON.stringify(sucursalesNacionales, null, 2));
+    console.log('💾 Todo guardado en "domex_sucursales_nacional.json".');
 
   } catch (error) {
-    console.error('❌ Error fatal:', error.message);
+    console.error('❌ Error fatal en el navegador:', error.message);
   }
 }
 
-laFusionDefinitiva();
+extraccionNacional();

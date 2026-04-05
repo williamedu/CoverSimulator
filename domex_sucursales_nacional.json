@@ -1,4 +1,4 @@
-export const domexSucursales = [
+[
   {
     "region": "Santo Domingo",
     "nombre": "DO.MLL - El Millón (Oficina Principal)",
