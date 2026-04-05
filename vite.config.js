@@ -7,4 +7,5 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: '/CoverSimulator/', // <--- ESTA ES LA LÍNEA MÁGICA
 })

@@ -2,16 +2,15 @@ import { useState } from 'react';
 import CaseGraphic from './CaseGraphic';
 import { domexSucursales } from '../utils/shippingData'; 
 
-// FÓRMULA DE HAVERSINE: Calcula la distancia en kilómetros entre dos coordenadas GPS
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Radio de la Tierra en km
+  const R = 6371; 
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a = 
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Devuelve la distancia en km
+  return R * c; 
 };
 
 export default function CheckoutForm({ onBack, designData }) {
@@ -23,17 +22,21 @@ export default function CheckoutForm({ onBack, designData }) {
     sucursalDomex: '' 
   });
 
+  // DETECTOR DE DISPOSITIVO: ¿Es un celular o una tablet?
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedBranch, setSelectedBranch] = useState(null);
   
-  // ESTADOS DEL POP-UP NORMAL
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // NUEVOS ESTADOS PARA EL GPS
   const [isLocating, setIsLocating] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [closestBranches, setClosestBranches] = useState([]);
+  
+  // 1️⃣ NUEVO ESTADO: Guardamos la ubicación exacta del cliente
+  const [userLocation, setUserLocation] = useState(null);
 
   const regionesUnicas = [...new Set(domexSucursales.map(s => s.region))];
   const sucursalesFiltradas = domexSucursales.filter(s => s.region === selectedRegion);
@@ -55,32 +58,33 @@ export default function CheckoutForm({ onBack, designData }) {
     return nombre.replace(/^DO\./, 'DOMEX ');
   };
 
-  // NUEVA FUNCIÓN: Encontrar ubicaciones cercanas
   const findClosestBranches = () => {
     if (!navigator.geolocation) {
       alert("Tu navegador no soporta geolocalización.");
       return;
     }
 
-    setIsLocating(true); // Encendemos el estado de carga
+    setIsLocating(true);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         
-        // Calculamos la distancia para cada sucursal que tenga coordenadas
+        // 2️⃣ GUARDAMOS LAS COORDENADAS DEL CLIENTE
+        setUserLocation({ lat: latitude, lng: longitude });
+        
         const branchesWithDistance = domexSucursales
           .filter(b => b.coordenadas && b.coordenadas.lat && b.coordenadas.lng)
           .map(b => ({
             ...b,
             distance: calculateDistance(latitude, longitude, b.coordenadas.lat, b.coordenadas.lng)
           }))
-          .sort((a, b) => a.distance - b.distance) // Ordenamos de menor a mayor distancia
-          .slice(0, 6); // Agarramos las 6 primeras (La ganadora + 5 opciones)
+          .sort((a, b) => a.distance - b.distance) 
+          .slice(0, 6); 
 
         setClosestBranches(branchesWithDistance);
-        setIsLocating(false); // Apagamos el estado de carga
-        setShowLocationModal(true); // Abrimos el pop-up de ubicaciones
+        setIsLocating(false); 
+        setShowLocationModal(true); 
       },
       (error) => {
         console.error("Error obteniendo ubicación:", error);
@@ -91,9 +95,8 @@ export default function CheckoutForm({ onBack, designData }) {
     );
   };
 
-  // Función para seleccionar una sucursal desde cualquier pop-up
   const handleSelectBranch = (sucursal) => {
-    setSelectedRegion(sucursal.region); // Auto-asigna la región
+    setSelectedRegion(sucursal.region); 
     setSelectedBranch(sucursal);
     setFormData({ ...formData, sucursalDomex: sucursal.nombre });
     setIsModalOpen(false);
@@ -114,7 +117,6 @@ export default function CheckoutForm({ onBack, designData }) {
         
         <div className="flex flex-col lg:flex-row gap-12">
           
-          {/* COLUMNA IZQUIERDA: FORMULARIO */}
           <div className="flex-1">
             <div className="border-b border-gray-200 pb-4 mb-6 flex justify-between items-end">
               <div>
@@ -153,31 +155,30 @@ export default function CheckoutForm({ onBack, designData }) {
                 </div>
               </div>
 
-              {/* ========================================== */}
-              {/* SECCIÓN DE ENVÍO DOMEX                       */}
-              {/* ========================================== */}
               <div className="pt-4 border-t border-gray-100">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Método de Envío (Domex)</h3>
                   
-                  {/* EL BOTÓN MÁGICO DE GPS */}
-                  <button 
-                    type="button"
-                    onClick={findClosestBranches}
-                    disabled={isLocating}
-                    className="text-xs bg-black text-white px-4 py-2 rounded shadow hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-wait"
-                  >
-                    {isLocating ? (
-                      <>
-                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        Calculando distancia...
-                      </>
-                    ) : (
-                      <>
-                        <span>📍</span> Usar mi ubicación actual
-                      </>
-                    )}
-                  </button>
+                 {/* EL BOTÓN MÁGICO DE GPS (Solo visible en celulares) */}
+                  {isMobile && (
+                    <button 
+                      type="button"
+                      onClick={findClosestBranches}
+                      disabled={isLocating}
+                      className="text-xs bg-black text-white px-4 py-2 rounded shadow hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-wait"
+                    >
+                      {isLocating ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          Calculando distancia...
+                        </>
+                      ) : (
+                        <>
+                          <span>📍</span> Usar mi ubicación actual
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -224,20 +225,24 @@ export default function CheckoutForm({ onBack, designData }) {
                   </div>
                 </div>
 
-                {/* VISOR DEL MAPA Y DETALLES */}
                 {selectedBranch && (
                   <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg overflow-hidden animate-fade-in shadow-sm">
                     {selectedBranch.coordenadas ? (
                       <div className="w-full h-48 bg-gray-200 relative">
-                       <iframe 
-  width="100%" 
-  height="100%" 
-  style={{ border: 0 }} 
-  loading="lazy" 
-  allowFullScreen 
-  referrerPolicy="no-referrer-when-downgrade"
-  src={`https://maps.google.com/maps?q=${selectedBranch.coordenadas.lat},${selectedBranch.coordenadas.lng}&hl=es&z=16&output=embed`}
-></iframe>
+                        {/* 3️⃣ EL TRUCO MAGISTRAL EN EL IFRAME */}
+                        <iframe 
+                          width="100%" 
+                          height="100%" 
+                          style={{ border: 0 }} 
+                          loading="lazy" 
+                          allowFullScreen 
+                          referrerPolicy="no-referrer-when-downgrade"
+                         src={
+    userLocation && isMobile
+      ? `https://maps.google.com/maps?q=${userLocation.lat},${userLocation.lng}&daddr=${selectedBranch.coordenadas.lat},${selectedBranch.coordenadas.lng}&hl=es&output=embed`
+      : `https://maps.google.com/maps?q=${selectedBranch.coordenadas.lat},${selectedBranch.coordenadas.lng}&hl=es&z=16&output=embed`
+  }
+                        ></iframe>
                       </div>
                     ) : (
                       <div className="w-full h-24 bg-gray-200 flex items-center justify-center">
@@ -267,7 +272,6 @@ export default function CheckoutForm({ onBack, designData }) {
             </form>
           </div>
   
-          {/* COLUMNA DERECHA: MINIATURA DEL DISEÑO */}
           <div className="w-full lg:w-72 bg-gray-50 rounded-xl p-6 border border-gray-100 self-start">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 text-center">Tu Diseño</h3>
             
@@ -299,9 +303,6 @@ export default function CheckoutForm({ onBack, designData }) {
         </div> 
       </div>
 
-      {/* ========================================== */}
-      {/* MODAL POP-UP DE BÚSQUEDA MANUAL            */}
-      {/* ========================================== */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden">
@@ -367,9 +368,6 @@ export default function CheckoutForm({ onBack, designData }) {
         </div>
       )}
 
-      {/* ========================================== */}
-      {/* MODAL POP-UP DE RESULTADOS GPS             */}
-      {/* ========================================== */}
       {showLocationModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
