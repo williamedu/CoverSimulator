@@ -88,7 +88,13 @@ export default function CheckoutForm({ onBack, designData }) {
       },
       (error) => {
         console.error("Error obteniendo ubicación:", error);
-        alert("No pudimos acceder a tu ubicación. Por favor, asegúrate de darle permisos a la página.");
+      alert(
+  "📍 ¡Ups! El GPS está bloqueado.\n\n" +
+  "Para usar esta función:\n" +
+  "• En iPhone (Safari): Ve a Configuración > Privacidad > Localización > Safari y elige 'Al usar la app'.\n" +
+  "• En Android/Chrome: Toca el candadito (🔒) en la barra de direcciones de arriba y activa la 'Ubicación'.\n\n" +
+  "Luego, recarga esta página y vuelve a intentarlo."
+);
         setIsLocating(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
