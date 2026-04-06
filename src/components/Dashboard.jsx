@@ -155,6 +155,9 @@ export default function Dashboard() {
           ordenesFiltradas.map((order) => {
             const OrderIcon = iconsList.find(i => i.id === order.personalizacion?.iconoId)?.component || null;
             const idCorto = order.id.slice(-6).toUpperCase();
+            
+            // LA MAGIA ESTÁ AQUÍ: Busca el modelo exacto que el cliente compró
+            const matchedModel = phoneModels.find(m => m.name === order.dispositivo_modelo) || phoneModels[0];
 
             return (
               <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex flex-col md:flex-row gap-4 items-start md:items-center relative transition-hover hover:border-gray-300">
@@ -164,15 +167,14 @@ export default function Dashboard() {
 
               {/* 1. CAJA DE IMAGEN CON ZOOM AJUSTADO */}
                 <div className="w-20 md:w-24 h-28 md:h-32 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0 shadow-sm flex items-center justify-center overflow-hidden ml-2">
-                  {/* Zoom del 11% y un mt-1 para bajar la cámara y no cortarla */}
                   <div className="relative w-full aspect-[2/3] scale-120 mt-15">
-                    <CaseGraphic 
+                   <CaseGraphic 
                       color={order.dispositivo_color_hex || '#333333'} 
                       initials={order.personalizacion?.texto || ''}
                       IconComponent={OrderIcon}
                       detailsColor={order.personalizacion?.color_letras_hex || '#D4AF37'} 
-                      baseImage={phoneModels[0].baseImage} 
-                      textureImage={phoneModels[0].textureImage}
+                      baseImage={matchedModel.baseImage} 
+                      textureImage={matchedModel.textureImage}
                       textSize="text-[10px] font-bold" 
                       iconSize={14}
                     />

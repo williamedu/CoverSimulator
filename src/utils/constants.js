@@ -14,9 +14,23 @@ import proTextura from '../assets/models/iphone-pro_textura.png';
 // NUEVO: Importamos las imágenes del modelo normal
 import normalBase from '../assets/models/iphone-normal_base.png';
 import normalTextura from '../assets/models/iphone-normal_textura.png';
+import pro17Base from '../assets/models/iphone-17pro_base.png';
+import pro17MaxTextura from '../assets/models/iphone-17promax_textura.png';
 
 // DICCIONARIO DE MODELOS DE CELULAR
 export const phoneModels = [
+  {
+    id: 'iphone-17-pro',
+    name: 'iPhone 17 Pro',
+    baseImage: pro17Base,        // Usamos la base del Pro
+    textureImage: pro17MaxTextura // Reciclamos la textura del Pro Max
+  },
+  {
+    id: 'iphone-17-pro-max',
+    name: 'iPhone 17 Pro Max',
+    baseImage: pro17Base,        // Reciclamos la base del Pro
+    textureImage: pro17MaxTextura // Usamos la textura del Pro Max
+  },
   {
     id: 'iphone-promax',
     name: 'iPhone 13 / 14 Pro Max',
@@ -29,7 +43,6 @@ export const phoneModels = [
     baseImage: proBase,
     textureImage: proTextura
   },
-  // NUEVO: Agregamos el modelo normal a la lista
   {
     id: 'iphone-normal',
     name: 'iPhone 13 / 14 Normal',
@@ -38,20 +51,14 @@ export const phoneModels = [
   }
 ];
 
-// Paleta de colores para el forro base
+// Paleta de colores simplificada para el forro base
 export const caseColors = [
-  { name: 'Azul Real', hex: '#1D4ED8' },
-  { name: 'Marrón Clásico', hex: '#8B4513' },
-  { name: 'Verde Bosque', hex: '#166534' },
-  { name: 'Negro Profundo', hex: '#1A1A1A' },
-  { name: 'Gris Claro', hex: '#E5E7EB' },
-  { name: 'Rojo Carmesí', hex: '#DC2626' },
-  { name: 'Naranja Vivo', hex: '#EA580C' },
-  { name: 'Lavanda', hex: '#A78BFA' },
-  { name: 'Celeste', hex: '#7DD3FC' },
-  { name: 'Crema', hex: '#FEF3C7' },
-  { name: 'Rosa Pastel', hex: '#F9A8D4' },
-  { name: 'Vino', hex: '#7F1D1D' }
+  { name: 'Verde', hex: '#166534' },
+  { name: 'Rojo', hex: '#DC2626' },
+  { name: 'Amarillo', hex: '#EAB308' },
+  { name: 'Azul', hex: '#1D4ED8' },
+  { name: 'Blanco', hex: '#FFFFFF' },
+  { name: 'Crema', hex: '#131111' }
 ];
 
 // Paleta de colores FIJOS para los detalles (Letras e Ícono)
